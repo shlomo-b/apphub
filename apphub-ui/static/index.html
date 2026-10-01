@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AppHub</title>
+  <script>
+    if (localStorage.getItem("apphub-theme") === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  </script>
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32.png?v=1.0.11" />
+  <link rel="icon" type="image/png" sizes="64x64" href="/static/img/favicon-64.png?v=1.0.11" />
+  <link rel="shortcut icon" href="/static/img/favicon.png?v=1.0.11" />
+  <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png?v=1.0.11" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css?v=1.0.30" />
+</head>
+<body>
+  <div id="login-screen" class="login-screen" hidden>
+    <div class="login-art" aria-hidden="true">
+      <img class="login-photo" src="/static/img/login-dark.png?v=1.0.30" alt="" />
+    </div>
+    <div class="login-card">
+      <strong class="login-brand">AppHub</strong>
+      <form id="login-form" class="login-form">
+        <label>
+          Username
+          <input id="username" name="username" autocomplete="username" required />
+        </label>
+        <label>
+          Password
+          <input id="password" name="password" type="password" autocomplete="current-password" required />
+        </label>
+        <p id="login-error" class="error" hidden></p>
+        <button type="submit">Sign in</button>
+      </form>
+      <span class="login-brand-footer" aria-hidden="true">AppHub</span>
+    </div>
+  </div>
+
+  <div id="app-screen" class="app-screen" hidden>
+    <header class="top">
+      <div class="brand">
+        <label class="theme-toggle">
+          <input id="theme-toggle" type="checkbox" />
+          <span>Dark mode</span>
+        </label>
+        <strong>AppHub</strong>
+      </div>
+      <div class="section-picker" id="section-picker">
+        <button type="button" id="section-current" class="section-current">
+          <span>Current: <strong id="section-current-name">DevOps-Tools</strong></span>
+          <span class="section-caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="section-menu" id="section-menu" hidden>
+          <p class="section-menu-title">Select section</p>
+          <div class="section-list" id="section-list"></div>
+          <div class="section-new">
+            <input id="section-new-name" type="text" placeholder="New section" autocomplete="off" />
+            <button type="button" id="section-new-add" class="section-plus" title="Add section">+</button>
+          </div>
+          <p id="section-menu-error" class="error" hidden></p>
+          <div class="section-menu-actions">
+            <button type="button" id="section-menu-close">Close</button>
+          </div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <input id="search" type="search" placeholder="Search apps" />
+        <div class="user-block">
+          <div class="user-row">
+            <span id="welcome-user"></span>
+            <button id="logout-btn" type="button">Log out</button>
+          </div>
+          <span id="mongo-status" class="mongo-status"></span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div id="grid" class="grid"></div>
+    </main>
+  </div>
+
+  <dialog id="app-dialog">
+    <form id="app-form">
+      <h3 id="dialog-title">Add app</h3>
+      <input type="hidden" id="app-id" />
+      <label>Name<input id="app-name" required placeholder="Uptime-Kuma" /></label>
+      <label>URL<input id="app-url" required placeholder="https://example.com/" /></label>
+      <input type="hidden" id="app-icon" value="custom" />
+      <div id="icon-custom-wrap">
+        <label>Icon URL<input id="app-icon-url" placeholder="https://example.com/icon.png" /></label>
+        <label>Or upload icon
+          <input id="app-icon-file" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif" />
+        </label>
+        <div id="icon-preview-wrap" class="icon-preview-wrap" hidden>
+          <img id="icon-preview" alt="Icon preview" width="72" height="72" referrerpolicy="no-referrer" />
+        </div>
+      </div>
+      <p id="app-error" class="error" hidden></p>
+      <div class="dialog-actions">
+        <button id="app-cancel" type="button">Cancel</button>
+        <button class="primary" type="submit">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="section-dialog">
+    <form id="section-form" method="dialog">
+      <h3 id="section-dialog-title">Edit section</h3>
+      <input type="hidden" id="section-id" />
+      <label>Name<input id="section-name" required placeholder="Security" /></label>
+      <p id="section-error" class="error" hidden></p>
+      <div class="dialog-actions">
+        <button id="section-delete" type="button" class="danger" hidden>Delete</button>
+        <button id="section-cancel" type="button">Cancel</button>
+        <button class="primary" type="submit">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" hidden role="status"></div>
+  <dialog id="idle-dialog" class="idle-dialog">
+    <h3>Session timeout</h3>
+    <p>You will be logged out in 30 seconds due to inactivity.</p>
+    <div class="dialog-actions">
+      <button type="button" class="primary" id="idle-stay">Stay signed in</button>
+    </div>
+  </dialog>
+
+  <footer class="app-footer">© 2026 AppHub. All rights reserved by Shlomo Barzilai.</footer>
+  <script src="/static/app.js?v=1.0.30"></script>
+</body>
+</html>

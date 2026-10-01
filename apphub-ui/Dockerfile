@@ -1,0 +1,36 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# for CI github actionss
+COPY apphub-ui/requirements.txt .
+
+# for local testing
+# COPY requirements.txt .
+
+# hadolint ignore=DL3005
+RUN apt-get update -y \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir -r requirements.txt
+
+# for CI github actions
+COPY apphub-ui/app ./app
+COPY apphub-ui/static ./static
+
+# for local testing
+# COPY app ./app
+# COPY static ./static
+RUN mkdir -p /app/data
+
+# ------------ NEW (security best practice) -------------
+# Create a non-root user and give it the app files
+RUN adduser --disabled-password --gecos "" appuser --uid 1000 \
+    && chown -R appuser:appuser /app
+
+# Switch to the new user
+USER appuser
+
+EXPOSE 8092
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8092"]

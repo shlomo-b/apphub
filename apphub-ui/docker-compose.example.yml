@@ -1,0 +1,31 @@
+services:
+  # Optional local Mongo (not used for Atlas).
+  # mongo:
+  #   image: mongo:7
+  #   container_name: mongo
+  #   environment:
+  #     - MONGO_INITDB_ROOT_USERNAME=""
+  #     - MONGO_INITDB_ROOT_PASSWORD=""
+  #   volumes:
+  #     - apphub_mongo_data:/data/db
+  #   restart: unless-stopped
+
+  apphub:
+    build: .
+    image: apphub:v1.0.0
+    container_name: apphub
+    ports:
+      - "8092:8092"
+    environment:
+      - TZ=Asia/Jerusalem
+      - APPHUB_USER=""
+      - APPHUB_PASSWORD=""
+      - USE_MONGODB=true
+      - MONGO_HOST=your-cluster.mongodb.net
+      - MONGO_DB=apphub
+      - MONGO_INITDB_ROOT_USERNAME=""
+      - MONGO_INITDB_ROOT_PASSWORD=""
+    restart: unless-stopped
+
+# volumes:
+#   apphub_mongo_data:
