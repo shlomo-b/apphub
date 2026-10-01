@@ -4,6 +4,8 @@ One place for all your resources — DevOps, networking, cloud tools, and anythi
 
 Sign in, group links into sections, add tiles (name, URL, icon), and open them from a single dashboard. Port **8092**. Code is in `apphub-ui/`.
 
+![AppHub dashboard](docs/dashboard.png)
+
 ## Run
 
 ```bash
