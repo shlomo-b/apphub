@@ -1,0 +1,5 @@
+data/.session_secret
+data/*.tmp
+data/icons/*
+!data/icons/.gitkeep
+
