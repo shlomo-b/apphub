@@ -24,6 +24,7 @@ from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 
 from app import mongodb_atlas as atlas
+from app import metrics as metrics_mod
 
 log = logging.getLogger("apphub")
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
@@ -83,6 +84,7 @@ if atlas.USE_MONGODB:
         log.info("Connected to MongoDB successfully")
 
 app = FastAPI(title="AppHub")
+app.include_router(metrics_mod.router)
 
 
 def _session_secret() -> str:
@@ -184,12 +186,11 @@ def save_file_apps(apps: list[dict[str, Any]]) -> None:
 
 def load_sections() -> list[dict[str, Any]]:
     global _sections_cache
-    if _sections_cache is not None:
-        return [dict(row) for row in _sections_cache]
     if not atlas.USE_MONGODB:
         rows = load_file_payload()["sections"]
         _sections_cache = [dict(row) for row in rows]
         return [dict(row) for row in rows]
+    # Always read from Mongo so every Kubernetes pod sees the same list.
     started = time.monotonic()
     rows = [public_section(doc) for doc in atlas.mongo_db().sections.find()]
     if not rows:
@@ -295,8 +296,9 @@ def load_apps() -> list[dict[str, Any]]:
     if not atlas.USE_MONGODB:
         return load_file_apps()
     global _apps_cache
-    if _apps_cache is not None:
-        return [dict(row) for row in _apps_cache]
+    # Always read from Mongo so every Kubernetes pod sees the same apps.
+    # Per-pod memory cache caused tiles to appear/disappear on refresh
+    # when the Service load-balanced across replicas.
     started = time.monotonic()
     rows: list[dict[str, Any]] = []
     database = atlas.mongo_db()
