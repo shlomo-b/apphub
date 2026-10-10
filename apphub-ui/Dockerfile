@@ -31,6 +31,6 @@ RUN adduser --disabled-password --gecos "" appuser --uid 1000 \
 # Switch to the new user
 USER appuser
 
-EXPOSE 8092
+EXPOSE 80
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8092"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
