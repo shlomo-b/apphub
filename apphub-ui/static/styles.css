@@ -36,8 +36,16 @@ button { cursor: pointer; }
   font-size: 13px;
 }
 
+body:has(#login-screen:not([hidden])) {
+  background: #05070b;
+}
+
+body:has(#login-screen:not([hidden])) .app-footer {
+  display: none;
+}
+
 .login-screen {
-  height: calc(100vh - 52px);
+  height: 100vh;
   min-height: 0;
   overflow: hidden;
   display: grid;
@@ -93,18 +101,79 @@ button { cursor: pointer; }
 }
 
 .login-form {
-  flex: 1 1 auto;
-  width: min(260px, 100%);
+  flex: 0 0 auto;
+  width: min(210px, 100%);
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  margin: 20px 0 0;
+}
+
+.login-card:has(#saml-login:not([hidden])) .login-form {
+  margin-top: 0;
+}
+
+.saml-login[hidden],
+.login-or[hidden] {
+  display: none !important;
+  margin: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+}
+
+.saml-login {
+  display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 28px;
-  margin: 0;
+  width: 180px;
+  height: 26px;
+  margin: 24px auto 0;
+  padding: 0 12px;
+  border: 0;
+  outline: none;
+  border-radius: 12px;
+  background: #5c6f7c;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.saml-login:link,
+.saml-login:visited,
+.saml-login:hover,
+.saml-login:active,
+.saml-login:focus,
+.saml-login:focus-visible {
+  border: 0;
+  outline: none;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: none;
+}
+
+.saml-login:hover {
+  background: #42505a;
+}
+
+.login-or {
+  margin: 16px 0;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
 }
 
 .login-brand-footer {
   flex: 0 0 auto;
-  margin: 0;
+  margin-top: auto;
   color: #4a5564;
   font-size: 18px;
   font-weight: 700;
@@ -121,9 +190,11 @@ button { cursor: pointer; }
   display: grid;
   gap: 10px;
   margin: 0;
+  width: 100%;
   font-size: 14px;
   font-weight: 400;
   color: #9aa8ba;
+  text-align: center;
 }
 
 dialog label {
@@ -142,6 +213,7 @@ dialog label {
   padding: 6px 0 10px;
   background: transparent;
   color: #e8edf4;
+  text-align: center;
   box-shadow: none;
   outline: none;
 }
@@ -675,7 +747,7 @@ dialog form {
   .section-picker { min-width: 100%; justify-self: stretch; }
   .top-actions { width: 100%; }
   .top-actions input { flex: 1; }
-  .login-screen { grid-template-columns: 1fr; height: auto; min-height: calc(100vh - 52px); overflow: auto; }
+  .login-screen { grid-template-columns: 1fr; height: auto; min-height: 100vh; overflow: auto; }
   .login-art { min-height: 220px; max-height: 280px; height: auto; }
   .login-card { border-left: 0; border-top: 1px solid #2d3540; height: auto; }
 }

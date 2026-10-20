@@ -15,7 +15,7 @@ services:
     image: apphub:v1.0.0
     container_name: apphub
     ports:
-      - "8092:8092"
+      - "8092:80"
     environment:
       - TZ=Asia/Jerusalem
       - APPHUB_USER=""
@@ -25,7 +25,59 @@ services:
       - MONGO_DB=apphub
       - MONGO_INITDB_ROOT_USERNAME=""
       - MONGO_INITDB_ROOT_PASSWORD=""
+      - SESSION_HTTPS_ONLY=true
+      - ENABLE_SAML=true
+      - SAML_IDENTIFIER=https://10.0.11.10/remote/saml/metadata
+      - SAML_REPLY_URL=https://10.0.11.10/remote/saml/acs
+      - FRONTEND_URL_SAML=https://10.0.11.10
+      - MICROSOFT_ENTRA_IDENTIFIER=
+      - SAML_LOGIN_URL=
+      - SAML_CERTIFICATE=
+      - ENABLE_AZURE_GROUPS=false
+      - ALLOWED_AZURE_GROUPS_ID=false
+      - ENABLE_AZURE_USERS=true
+      - ALLOWED_AZURE_USERS_ID=
+      - ALLOWED_ORGANIZATIONS_ID=
+      - ALLOWED_EMAIL_DOMAINS=
+      - AZURE_APP_ROLE_ADMIN=AppHubAdmin
+      - AZURE_APP_ROLE_VIEWER=AppHubViewer
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.apphub.rule=Host(`10.0.11.10`)"
+      - "traefik.http.routers.apphub.entrypoints=websecure"
+      - "traefik.http.routers.apphub.tls=true"
+      - "traefik.http.services.apphub.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.apphub-stripport.headers.customrequestheaders.X-Forwarded-Port="
+      - "traefik.http.routers.apphub.middlewares=apphub-stripport"
+      - "traefik.http.routers.apphub-http.rule=Host(`10.0.11.10`)"
+      - "traefik.http.routers.apphub-http.entrypoints=web"
+      - "traefik.http.routers.apphub-http.middlewares=apphub-https-redirect"
+      - "traefik.http.middlewares.apphub-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.apphub-https-redirect.redirectscheme.permanent=true"
+    networks:
+      - apphub-network
+    restart: unless-stopped
+
+  traefik:
+    image: traefik:v3.6.2
+    container_name: apphub-traefik
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--serversTransport.insecureSkipVerify=true"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - apphub-network
     restart: unless-stopped
 
 # volumes:
 #   apphub_mongo_data:
+
+networks:
+  apphub-network:

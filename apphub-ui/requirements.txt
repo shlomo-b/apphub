@@ -5,3 +5,4 @@ itsdangerous==2.2.0
 pymongo==4.10.1
 dnspython==2.7.0
 Pillow==11.0.0
+python3-saml==1.16.0

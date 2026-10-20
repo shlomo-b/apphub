@@ -5,9 +5,15 @@ const state = {
   search: "",
   user: "",
   mongoName: "mongodb",
+  isSso: false,
+  ssoRole: "",
 };
 
 const $ = (id) => document.getElementById(id);
+
+function isSsoViewer() {
+  return state.isSso && state.ssoRole === "viewer";
+}
 
 function applyTheme(dark) {
   document.documentElement.classList.toggle("dark", dark);
@@ -108,6 +114,7 @@ function setSectionMenuOpen(open) {
 
 function renderSectionPicker() {
   const current = currentSection();
+  const viewer = isSsoViewer();
   $("section-current-name").textContent = current?.name || "Select section";
   $("section-list").innerHTML = state.sections.map((section) => {
     const active = section.id === state.section;
@@ -117,10 +124,12 @@ function renderSectionPicker() {
           <span class="section-check">${active ? "✓" : ""}</span>
           <span>${escapeAttr(section.name)}</span>
         </button>
-        <button type="button" class="section-icon-btn" data-rename="${escapeAttr(section.id)}" title="Edit">✎</button>
+        ${viewer ? "" : `<button type="button" class="section-icon-btn" data-rename="${escapeAttr(section.id)}" title="Edit">✎</button>`}
       </div>
     `;
   }).join("");
+  const newWrap = document.querySelector(".section-new");
+  if (newWrap) newWrap.hidden = viewer;
 }
 
 function openSectionDialog(existing) {
@@ -152,27 +161,29 @@ function render() {
     const hay = `${app.name} ${app.url}`.toLowerCase();
     return hay.includes(q);
   });
+  const viewer = isSsoViewer();
   const tiles = rows.map((app) => `
     <article class="tile">
       <a href="${app.url}" target="_blank" rel="noopener noreferrer">
         <div class="tile-icon icon-${app.icon === "custom" ? "custom" : "grafana"}">${iconHtml(app)}</div>
         <h3>${app.name}</h3>
       </a>
-      <div class="tile-foot">
+      ${viewer ? "" : `<div class="tile-foot">
         <button type="button" data-edit="${app.id}">Edit</button>
         <button type="button" data-del="${app.id}">Remove</button>
-      </div>
+      </div>`}
     </article>
   `).join("");
   $("grid").innerHTML = `
     ${tiles}
-    <button class="add-tile" id="add-tile" type="button">
+    ${viewer ? "" : `<button class="add-tile" id="add-tile" type="button">
       <span class="add-plus">+</span>
       <strong>Add app</strong>
       <p>Save a URL here</p>
-    </button>
+    </button>`}
   `;
-  $("add-tile").addEventListener("click", () => openDialog());
+  const addTile = $("add-tile");
+  if (addTile) addTile.addEventListener("click", () => openDialog());
 }
 
 function openDialog(existing) {
@@ -209,8 +220,10 @@ async function refresh() {
   render();
 }
 
-async function enterApp(user, mongo) {
+async function enterApp(user, mongo, extra = {}) {
   state.user = user;
+  state.isSso = Boolean(extra.is_sso);
+  state.ssoRole = extra.sso_role || "";
   $("welcome-user").textContent = `Welcome, ${user}`;
   if (mongo) renderMongoStatus(mongo);
   await refresh();
@@ -285,6 +298,8 @@ async function leaveApp() {
     /* already logged out */
   }
   state.user = "";
+  state.isSso = false;
+  state.ssoRole = "";
   $("username").value = "";
   $("password").value = "";
   $("login-error").hidden = true;
@@ -472,7 +487,7 @@ $("login-form").addEventListener("submit", async (e) => {
         password: $("password").value,
       }),
     });
-    await enterApp(data.user, data.mongodb);
+    await enterApp(data.user, data.mongodb, data);
   } catch (err) {
     $("login-error").textContent = err.message;
     $("login-error").hidden = false;
@@ -527,8 +542,25 @@ $("grid").addEventListener("click", async (e) => {
   }
 });
 
+function showSamlLogin(enabled) {
+  const button = $("saml-login");
+  const divider = $("login-or");
+  if (!button || !divider) return;
+  button.hidden = !enabled;
+  divider.hidden = !enabled;
+}
+
+if (new URLSearchParams(window.location.search).get("sso") === "success") {
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+fetch("/remote/saml/status")
+  .then((res) => res.json())
+  .then((data) => showSamlLogin(Boolean(data.enabled)))
+  .catch(() => showSamlLogin(false));
+
 api("/api/me")
-  .then((me) => enterApp(me.user, me.mongodb))
+  .then((me) => enterApp(me.user, me.mongodb, me))
   .catch(() => {
     $("app-screen").hidden = true;
     $("login-screen").hidden = false;
