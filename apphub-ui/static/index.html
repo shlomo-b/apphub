@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/styles.css?v=1.0.30" />
+  <link rel="stylesheet" href="/static/styles.css?v=1.0.35" />
 </head>
 <body>
   <div id="login-screen" class="login-screen" hidden>
@@ -25,6 +25,8 @@
     </div>
     <div class="login-card">
       <strong class="login-brand">AppHub</strong>
+      <a id="saml-login" class="saml-login" href="/remote/saml/login" hidden>Log in via Azure</a>
+      <p id="login-or" class="login-or" hidden>or</p>
       <form id="login-form" class="login-form">
         <label>
           Username
@@ -133,6 +135,6 @@
   </dialog>
 
   <footer class="app-footer">© 2026 AppHub. All rights reserved by Shlomo Barzilai.</footer>
-  <script src="/static/app.js?v=1.0.30"></script>
+  <script src="/static/app.js?v=1.0.35"></script>
 </body>
 </html>

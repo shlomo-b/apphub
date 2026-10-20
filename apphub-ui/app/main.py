@@ -22,9 +22,11 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app import mongodb_atlas as atlas
 from app import metrics as metrics_mod
+from app import saml as saml_mod
 
 log = logging.getLogger("apphub")
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
@@ -105,13 +107,27 @@ def _session_secret() -> str:
     return value
 
 
-app.add_middleware(SessionMiddleware, secret_key=_session_secret(), same_site="lax")
+_https_only = os.environ.get("SESSION_HTTPS_ONLY", "false").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=_session_secret(),
+    same_site="lax",
+    https_only=_https_only,
+)
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+saml_mod.attach(app)
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
 
 def require_login(request: Request) -> None:
     if not request.session.get("user"):
         raise HTTPException(status_code=401, detail="Not logged in")
+    saml_mod.reject_viewer_write(request)
 
 
 def ensure_collections() -> None:
@@ -769,7 +785,8 @@ def login(body: LoginIn, request: Request) -> dict[str, Any]:
     if body.username != APP_USER or body.password != APP_PASSWORD:
         raise HTTPException(status_code=401, detail="Wrong username or password")
     request.session["user"] = body.username
-    return {"user": body.username, "mongodb": atlas.mongo_status()}
+    saml_mod.clear_sso_session(request)
+    return {"user": body.username, "mongodb": atlas.mongo_status(), **saml_mod.session_user_info(request)}
 
 
 @app.post("/api/logout")
@@ -783,7 +800,7 @@ def me(request: Request) -> dict[str, Any]:
     user = request.session.get("user")
     if not user:
         raise HTTPException(status_code=401, detail="Not logged in")
-    return {"user": str(user), "mongodb": atlas.mongo_status()}
+    return {"user": str(user), "mongodb": atlas.mongo_status(), **saml_mod.session_user_info(request)}
 
 
 @app.get("/api/apps")

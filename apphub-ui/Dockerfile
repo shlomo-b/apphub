@@ -6,13 +6,21 @@ WORKDIR /app
 COPY apphub-ui/requirements.txt .
 
 # for local testing
-# COPY requirements.txt .
+#COPY requirements.txt .
 
-# hadolint ignore=DL3005
+# hadolint ignore=DL3005,DL3008
 RUN apt-get update -y \
     && apt-get upgrade -y \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir -r requirements.txt
+    && apt-get install -y --no-install-recommends \
+        gcc \
+        g++ \
+        pkg-config \
+        libxml2-dev \
+        libxslt1-dev \
+        libxmlsec1-dev \
+        libxmlsec1-openssl \
+    && pip install --no-cache-dir -r requirements.txt \
+    && rm -rf /var/lib/apt/lists/*
 
 # for CI github actions
 COPY apphub-ui/app ./app
