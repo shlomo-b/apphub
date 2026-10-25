@@ -1,1 +1,1 @@
-apphub-v3.0.0
+apphub-v3.1.0

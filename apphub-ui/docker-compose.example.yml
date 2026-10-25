@@ -39,8 +39,9 @@ services:
       - ALLOWED_AZURE_USERS_ID=
       - ALLOWED_ORGANIZATIONS_ID=
       - ALLOWED_EMAIL_DOMAINS=
-      - AZURE_APP_ROLE_ADMIN=AppHubAdmin
-      - AZURE_APP_ROLE_VIEWER=AppHubViewer
+    # Optional — defaults in code are AppHubAdmin / AppHubViewer
+    #  - AZURE_APP_ROLE_ADMIN=AppHubAdmin
+    #  - AZURE_APP_ROLE_VIEWER=AppHubViewer
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.apphub.rule=Host(`10.0.11.10`)"

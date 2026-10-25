@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/styles.css?v=1.0.35" />
+  <link rel="stylesheet" href="/static/styles.css?v=1.0.36" />
 </head>
 <body>
   <div id="login-screen" class="login-screen" hidden>
@@ -93,6 +93,9 @@
       <input type="hidden" id="app-id" />
       <label>Name<input id="app-name" required placeholder="Uptime-Kuma" /></label>
       <label>URL<input id="app-url" required placeholder="https://example.com/" /></label>
+      <label>Section
+        <select id="app-section" required></select>
+      </label>
       <input type="hidden" id="app-icon" value="custom" />
       <div id="icon-custom-wrap">
         <label>Icon URL<input id="app-icon-url" placeholder="https://example.com/icon.png" /></label>
@@ -135,6 +138,6 @@
   </dialog>
 
   <footer class="app-footer">© 2026 AppHub. All rights reserved by Shlomo Barzilai.</footer>
-  <script src="/static/app.js?v=1.0.35"></script>
+  <script src="/static/app.js?v=1.0.36"></script>
 </body>
 </html>
