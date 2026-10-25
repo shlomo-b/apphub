@@ -30,7 +30,7 @@ docker compose down
 | `SAML_IDENTIFIER` / `SAML_REPLY_URL` | App entity ID and ACS (`/remote/saml/metadata`, `/remote/saml/acs`) |
 | `SAML_LOGIN_URL` / `MICROSOFT_ENTRA_IDENTIFIER` / `SAML_CERTIFICATE` | Azure IdP login URL, issuer, and signing cert |
 | `FRONTEND_URL_SAML` | Public AppHub URL Azure redirects back to |
-| `AZURE_APP_ROLE_ADMIN` / `AZURE_APP_ROLE_VIEWER` | Azure app roles (`AppHubAdmin` / `AppHubViewer`) |
+| `AZURE_APP_ROLE_ADMIN` / `AZURE_APP_ROLE_VIEWER` | Optional. Defaults: `AppHubAdmin` / `AppHubViewer`. Set only if Azure uses different role names |
 | `ALLOWED_EMAIL_DOMAINS` / `ALLOWED_ORGANIZATIONS_ID` | Optional SAML filters |
 | `SESSION_HTTPS_ONLY` | `true` behind Traefik HTTPS |
 | `USE_MONGODB` | `true` = Mongo, `false` = local JSON |

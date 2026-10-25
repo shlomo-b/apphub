@@ -186,11 +186,24 @@ function render() {
   if (addTile) addTile.addEventListener("click", () => openDialog());
 }
 
+function fillSectionSelect(selected) {
+  const select = $("app-section");
+  const current = selected || state.section;
+  select.innerHTML = state.sections.map((section) => {
+    const active = section.id === current;
+    return `<option value="${escapeAttr(section.id)}"${active ? " selected" : ""}>${escapeAttr(section.name)}</option>`;
+  }).join("");
+  if (current && !state.sections.some((row) => row.id === current)) {
+    select.insertAdjacentHTML("afterbegin", `<option value="${escapeAttr(current)}" selected>${escapeAttr(current)}</option>`);
+  }
+}
+
 function openDialog(existing) {
   $("app-error").hidden = true;
   $("app-id").value = existing?.id || "";
   $("app-name").value = existing?.name || "";
   $("app-url").value = existing?.url || "";
+  fillSectionSelect(existing?.section || state.section);
   $("app-icon").value = "custom";
   $("app-icon-file").value = "";
   $("app-icon-url").value = existing?.icon_url || "";
@@ -507,9 +520,10 @@ $("app-form").addEventListener("submit", async (e) => {
     return;
   }
   const form = new FormData();
+  const section = $("app-section").value || current?.section || state.section;
   form.append("name", $("app-name").value);
   form.append("url", $("app-url").value);
-  form.append("section", current?.section || state.section);
+  form.append("section", section);
   form.append("icon", current?.icon === "grafana" && !file && !iconUrl ? "grafana" : icon);
   form.append("icon_url", iconUrl);
   if (file) form.append("icon_file", file);
@@ -522,6 +536,7 @@ $("app-form").addEventListener("submit", async (e) => {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.detail || res.statusText);
     $("app-dialog").close();
+    if (section && section !== state.section) setSection(section);
     await refresh();
   } catch (err) {
     $("app-error").textContent = err.message;
