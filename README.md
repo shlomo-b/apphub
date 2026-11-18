@@ -38,6 +38,11 @@ docker compose down
 | `MONGO_DB` | Database name |
 | `MONGO_URI` | Optional full URI |
 | `MONGO_INITDB_ROOT_USERNAME` / `MONGO_INITDB_ROOT_PASSWORD` | Mongo credentials |
+| `aws` / `azure` / `gcp` | `true` = enable Backup/Restore for that provider. Default `false`. If more than one is true: AWS → Azure → GCP |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `BUCKET_NAME` | Bucket required when `aws=true`. Keys: both or neither (neither = IAM). Partial keys fail as `s3_client_error` |
+| `AZURE_STORAGE_ACCOUNT` / `AZURE_STORAGE_CONTAINER` | Required when `azure=true` |
+| `AZURE_TENANT_ID` / `AZURE_CLIENT_ID` / `AZURE_CLIENT_SECRET` | Optional. If empty, use Azure managed identity (`DefaultAzureCredential`) |
+| `GCP_BUCKET_NAME` / `GCP_APPLICATION_CREDENTIALS` | Bucket required when `gcp=true`. Creds: JSON file path, raw JSON, or empty for GKE/ADC default |
 | `TZ` | Timezone |
 
 SAML SSO users must be assigned **AppHubAdmin** (full access) or **AppHubViewer** (read-only) in the Azure Enterprise App. Put the certificate and other secrets only in `docker-compose.yml`.
@@ -50,9 +55,10 @@ SAML SSO users must be assigned **AppHubAdmin** (full access) or **AppHubViewer*
 - Apps with custom icons (upload or URL)
 - Search, dark mode, idle logout
 - MongoDB Atlas, local Mongo, or file storage
+- Optional AWS / Azure / GCP backup and restore (`aws` / `azure` / `gcp`) to `apphub/apps.json`
 
 Default sections: DevOps-Tools, Networking-Tools, Clouds.
 
 ## API
 
-Session cookie after `POST /api/login` or SAML ACS. Main routes: `/api/me`, `/api/apps`, `/api/sections`, `/api/icons/{filename}`. SAML: `/remote/saml/login`, `/remote/saml/acs`, `/remote/saml/metadata`.
+Session cookie after `POST /api/login` or SAML ACS. Main routes: `/api/me`, `/api/apps`, `/api/apps/backup`, `/api/apps/restore`, `/api/sections`, `/api/icons/{filename}`. SAML: `/remote/saml/login`, `/remote/saml/acs`, `/remote/saml/metadata`.
