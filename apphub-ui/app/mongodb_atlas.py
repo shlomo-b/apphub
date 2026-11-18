@@ -54,7 +54,9 @@ def mongo() -> MongoClient:
             mongo_uri(),
             serverSelectionTimeoutMS=5000,
             connectTimeoutMS=5000,
-            minPoolSize=1,
+            minPoolSize=8,
+            maxPoolSize=50,
+            maxConnecting=8,
         )
     return _mongo
 

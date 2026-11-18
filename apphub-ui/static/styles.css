@@ -513,6 +513,42 @@ main {
   margin: 28px auto 0;
 }
 
+.cloud-actions {
+  position: fixed;
+  top: 88px;
+  left: 16px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.cloud-icon-btn {
+  width: 48px;
+  height: 48px;
+  padding: 8px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #1976d2;
+}
+
+.cloud-icon-btn:hover {
+  background: rgba(25, 118, 210, 0.12);
+}
+
+.cloud-icon-btn svg {
+  width: 32px;
+  height: 32px;
+  display: block;
+  fill: currentColor;
+}
+
+.app-screen.has-cloud-actions main {
+  padding-left: 40px;
+}
+
 .section-head {
   display: flex;
   justify-content: flex-end;
@@ -723,6 +759,7 @@ dialog form {
 }
 .toast.warning { background: #ed6c02; color: #fff; }
 .toast.success { background: #2e7d32; color: #fff; }
+.toast.error { background: #c62828; color: #fff; }
 
 .idle-dialog {
   border: 0;
@@ -780,6 +817,14 @@ html.dark .section-current,
 html.dark .section-menu,
 html.dark .section-menu-actions button {
   background: #161b22;
+}
+
+html.dark .cloud-icon-btn {
+  color: #90caf9;
+}
+
+html.dark .cloud-icon-btn:hover {
+  background: rgba(144, 202, 249, 0.12);
 }
 
 html.dark .dialog-actions .danger {

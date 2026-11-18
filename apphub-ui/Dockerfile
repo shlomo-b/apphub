@@ -6,7 +6,7 @@ WORKDIR /app
 COPY apphub-ui/requirements.txt .
 
 # for local testing
-#COPY requirements.txt .
+# COPY requirements.txt .
 
 # hadolint ignore=DL3005,DL3008
 RUN apt-get update -y \

@@ -39,9 +39,27 @@ services:
       - ALLOWED_AZURE_USERS_ID=
       - ALLOWED_ORGANIZATIONS_ID=
       - ALLOWED_EMAIL_DOMAINS=
+      # Optional cloud backup. Default false. Same env names as SecretPass / FortiGate backup.
+      # If more than one is true, priority is AWS → Azure → GCP.
+      # Auth: user keys if set; otherwise IAM / Azure managed identity / GCP service account or ADC.
+      - aws=false
+      - azure=false
+      - gcp=false
+      - AWS_ACCESS_KEY_ID=
+      - AWS_SECRET_ACCESS_KEY=
+      - BUCKET_NAME=
+      - AZURE_TENANT_ID=
+      - AZURE_CLIENT_ID=
+      - AZURE_CLIENT_SECRET=
+      - AZURE_STORAGE_ACCOUNT=
+      - AZURE_STORAGE_CONTAINER=
+      - GCP_BUCKET_NAME=
+      - GCP_APPLICATION_CREDENTIALS=/run/gcp-credentials.json
     # Optional — defaults in code are AppHubAdmin / AppHubViewer
     #  - AZURE_APP_ROLE_ADMIN=AppHubAdmin
     #  - AZURE_APP_ROLE_VIEWER=AppHubViewer
+    # volumes:
+    #   - ./gcp-storage.json:/run/gcp-credentials.json:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.apphub.rule=Host(`10.0.11.10`)"

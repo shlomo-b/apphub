@@ -217,3 +217,5 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 docker-compose.yml
+apphub-ui/gcp-storage.json
+gcp-storage.json

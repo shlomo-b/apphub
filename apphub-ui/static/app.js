@@ -7,6 +7,8 @@ const state = {
   mongoName: "mongodb",
   isSso: false,
   ssoRole: "",
+  aws: false,
+  cloudLabel: "AWS S3",
 };
 
 const $ = (id) => document.getElementById(id);
@@ -75,17 +77,24 @@ function escapeAttr(value) {
 }
 
 function iconSrc(app) {
-  if (app.icon === "custom") {
-    const name = app.icon_file || app.id;
-    const bust = encodeURIComponent(app.icon_file || app.icon_url || Date.now());
-    return `/api/icons/${encodeURIComponent(name)}?v=${bust}`;
-  }
-  return "/static/img/grafana.png";
+  if (app.icon !== "custom") return "/static/img/grafana.png";
+  if (app.icon_url) return app.icon_url;
+  const name = app.icon_file || app.id;
+  const bust = encodeURIComponent(app.icon_file || Date.now());
+  return `/api/icons/${encodeURIComponent(name)}?v=${bust}`;
 }
 
 function iconHtml(app) {
-  const remote = app.icon === "custom" && app.icon_url ? app.icon_url : "";
-  return `<img src="${escapeAttr(iconSrc(app))}" alt="" referrerpolicy="no-referrer" data-remote="${escapeAttr(remote)}" onerror="window.__iconErr(this)" />`;
+  if (app.icon !== "custom") {
+    return `<img src="/static/img/grafana.png" alt="" />`;
+  }
+  const local = app.icon_file
+    ? `/api/icons/${encodeURIComponent(app.icon_file)}?v=${encodeURIComponent(app.icon_file)}`
+    : "";
+  const remote = app.icon_url || "";
+  const src = remote || local;
+  const fallback = remote && local && remote !== local ? local : "";
+  return `<img src="${escapeAttr(src)}" alt="" referrerpolicy="no-referrer" data-remote="${escapeAttr(fallback)}" onerror="window.__iconErr(this)" />`;
 }
 
 function previewSrc() {
@@ -229,8 +238,21 @@ async function refresh() {
     state.section = state.sections[0]?.id || "";
   }
   renderMongoStatus(data.mongodb);
+  state.aws = Boolean(data.cloud || data.aws);
+  state.cloudLabel = data.backup_storage_label || "cloud storage";
+  renderCloudActions();
   renderSectionPicker();
   render();
+}
+
+function renderCloudActions() {
+  const wrap = $("cloud-actions");
+  if (!wrap) return;
+  wrap.hidden = !state.aws;
+  $("backup-btn").hidden = isSsoViewer();
+  $("backup-btn").title = `Backup to ${state.cloudLabel}`;
+  $("restore-btn").title = `Restore from ${state.cloudLabel}`;
+  $("app-screen").classList.toggle("has-cloud-actions", state.aws);
 }
 
 async function enterApp(user, mongo, extra = {}) {
@@ -319,6 +341,8 @@ async function leaveApp() {
   $("welcome-user").textContent = "";
   renderMongoStatus({ name: state.mongoName || "mongodb", connected: false });
   $("app-screen").hidden = true;
+  $("app-screen").classList.remove("has-cloud-actions");
+  $("cloud-actions").hidden = true;
   $("login-screen").hidden = false;
 }
 
@@ -484,6 +508,31 @@ $("app-icon-file").addEventListener("change", () => {
   $("icon-preview-wrap").hidden = false;
 });
 $("logout-btn").addEventListener("click", () => leaveApp());
+$("backup-btn").addEventListener("click", async () => {
+  if (!state.aws || isSsoViewer()) return;
+  try {
+    const data = await api("/api/apps/backup", { method: "POST" });
+    showToast(data.message || `Backup completed — saved to ${state.cloudLabel}`, "success");
+    setTimeout(hideToast, 5000);
+  } catch (err) {
+    showToast(err.message || "Backup failed", "error");
+    setTimeout(hideToast, 5000);
+  }
+});
+$("restore-btn").addEventListener("click", async () => {
+  if (!state.aws) return;
+  if (!confirm(`Restore apps from ${state.cloudLabel}? Current tiles will be replaced.`)) return;
+  try {
+    showToast(`Restoring from ${state.cloudLabel}...`, "warning");
+    const data = await api("/api/apps/restore", { method: "POST" });
+    showToast(data.message || `Restore completed from ${state.cloudLabel}`, "success");
+    setTimeout(hideToast, 5000);
+    await refresh();
+  } catch (err) {
+    showToast(err.message || "Restore failed", "error");
+    setTimeout(hideToast, 5000);
+  }
+});
 $("idle-stay").addEventListener("click", () => resetIdleTimer());
 $("idle-dialog").addEventListener("cancel", (e) => {
   e.preventDefault();
