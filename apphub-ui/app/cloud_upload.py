@@ -9,9 +9,75 @@ from typing import Any
 
 log = logging.getLogger("apphub")
 
-USE_AWS = os.environ.get("aws", "false").strip().lower() == "true"
-USE_AZURE = os.environ.get("azure", "false").strip().lower() == "true"
-USE_GCP = os.environ.get("gcp", "false").strip().lower() == "true"
+
+def _flag(name: str) -> str | None:
+    raw = os.environ.get(name)
+    if raw is None:
+        return None
+    value = raw.strip().lower()
+    return value or None
+
+
+def _set(name: str) -> str:
+    return (os.environ.get(name) or "").strip()
+
+
+def _using_aws_service_account() -> bool:
+    token_file = _set("AWS_WEB_IDENTITY_TOKEN_FILE")
+    if _set("AWS_ROLE_ARN") or (token_file and os.path.isfile(token_file)):
+        return True
+    return False
+
+
+def _aws_enabled() -> bool:
+    """Turn AWS backup on from aws=true, or when the bucket is set with keys or a service account."""
+    flag = _flag("aws")
+    if flag is not None:
+        return flag == "true"
+    if not _set("BUCKET_NAME"):
+        return False
+    access_key = _set("AWS_ACCESS_KEY_ID")
+    secret_key = _set("AWS_SECRET_ACCESS_KEY")
+    if access_key and secret_key:
+        return True
+    if access_key or secret_key:
+        return False
+    return _using_aws_service_account()
+
+
+def _azure_enabled() -> bool:
+    """Turn Azure backup on from azure=true, or from storage account and container."""
+    flag = _flag("azure")
+    if flag is not None:
+        return flag == "true"
+    if not _set("AZURE_STORAGE_ACCOUNT") or not _set("AZURE_STORAGE_CONTAINER"):
+        return False
+    present = [
+        bool(_set("AZURE_TENANT_ID")),
+        bool(_set("AZURE_CLIENT_ID")),
+        bool(_set("AZURE_CLIENT_SECRET")),
+    ]
+    return all(present) or not any(present)
+
+
+def _gcp_enabled() -> bool:
+    """Turn GCP backup on from gcp=true, or from a bucket plus a local key file or service account."""
+    flag = _flag("gcp")
+    if flag is not None:
+        return flag == "true"
+    if not (_set("GCP_BUCKET_NAME") or _set("GCS_BUCKET_NAME")):
+        return False
+    creds = _set("GCP_APPLICATION_CREDENTIALS") or _set("GOOGLE_APPLICATION_CREDENTIALS")
+    if creds and (os.path.isfile(creds) or (creds.startswith("{") and '"private_key"' in creds)):
+        return True
+    if creds:
+        return False
+    return bool(_set("K_SERVICE") or _set("GAE_SERVICE") or _set("CLOUD_RUN_JOB"))
+
+
+USE_AWS = _aws_enabled()
+USE_AZURE = _azure_enabled()
+USE_GCP = _gcp_enabled()
 CLOUD_FOLDER = "apphub"
 CLOUD_OBJECT = f"{CLOUD_FOLDER}/apps.json"
 
