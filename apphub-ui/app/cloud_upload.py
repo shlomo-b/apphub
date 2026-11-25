@@ -9,7 +9,43 @@ from typing import Any
 
 log = logging.getLogger("apphub")
 
-USE_AWS = os.environ.get("aws", "false").strip().lower() == "true"
+
+def _flag(name: str) -> str | None:
+    raw = os.environ.get(name)
+    if raw is None:
+        return None
+    value = raw.strip().lower()
+    return value or None
+
+
+def _set(name: str) -> str:
+    return (os.environ.get(name) or "").strip()
+
+
+def _using_aws_service_account() -> bool:
+    token_file = _set("AWS_WEB_IDENTITY_TOKEN_FILE")
+    if _set("AWS_ROLE_ARN") or (token_file and os.path.isfile(token_file)):
+        return True
+    return False
+
+
+def _aws_enabled() -> bool:
+    """Turn AWS backup on from aws=true, or when the bucket is set with keys or a service account."""
+    flag = _flag("aws")
+    if flag is not None:
+        return flag == "true"
+    if not _set("BUCKET_NAME"):
+        return False
+    access_key = _set("AWS_ACCESS_KEY_ID")
+    secret_key = _set("AWS_SECRET_ACCESS_KEY")
+    if access_key and secret_key:
+        return True
+    if access_key or secret_key:
+        return False
+    return _using_aws_service_account()
+
+
+USE_AWS = _aws_enabled()
 USE_AZURE = os.environ.get("azure", "false").strip().lower() == "true"
 USE_GCP = os.environ.get("gcp", "false").strip().lower() == "true"
 CLOUD_FOLDER = "apphub"
